@@ -1,5 +1,3 @@
-# teste-portfolio
-
 # João Pedro Brocuá — Portfólio Pessoal
 
 Site pessoal de apresentação, feito com **HTML, CSS e JavaScript puro** (sem
