@@ -1,133 +1,144 @@
 // Ano dinâmico no rodapé
 document.getElementById("year").textContent = new Date().getFullYear();
 
-// Tela de "boot" rápida ao carregar a página
-const bootScreen = document.getElementById("bootScreen");
-const bootText = document.getElementById("bootText");
-const bootMessage = "carregando_perfil.exe";
-let bootIndex = 0;
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function typeBoot() {
-  if (bootIndex <= bootMessage.length) {
-    bootText.textContent = bootMessage.slice(0, bootIndex);
-    bootIndex += 1;
-    setTimeout(typeBoot, 45);
-  } else {
-    setTimeout(() => bootScreen.classList.add("is-hidden"), 350);
-  }
-}
-typeBoot();
-
-// Efeito de "digitação" alternando o cargo no hero
-const typedRole = document.getElementById("typedRole");
-const roles = [
-  "Estudante de Sistemas da Informação",
-  "Agente de Registro na Facilita Certificadora Digital",
-  "Explorando Python, dados e web",
-  "Sempre pronto para o próximo desafio",
-];
-let roleIndex = 0;
-let charIndex = roles[0].length;
-let deleting = false;
-
-function tickRole() {
-  const current = roles[roleIndex];
-  charIndex += deleting ? -1 : 1;
-  typedRole.textContent = current.slice(0, charIndex);
-
-  let delay = deleting ? 30 : 55;
-
-  if (!deleting && charIndex === current.length) {
-    deleting = true;
-    delay = 1800;
-  } else if (deleting && charIndex === 0) {
-    deleting = false;
-    roleIndex = (roleIndex + 1) % roles.length;
-    delay = 400;
-  }
-
-  setTimeout(tickRole, delay);
-}
-setTimeout(tickRole, 1800);
-
-// Menu mobile (hambúrguer)
-const navToggle = document.getElementById("navToggle");
-const navMenu = document.getElementById("navMenu");
-
-navToggle.addEventListener("click", () => {
-  const isOpen = navMenu.classList.toggle("open");
-  navToggle.setAttribute("aria-expanded", String(isOpen));
-});
-
-// Fecha o menu mobile ao clicar em um link
-navMenu.querySelectorAll("a").forEach((link) => {
-  link.addEventListener("click", () => {
-    navMenu.classList.remove("open");
-    navToggle.setAttribute("aria-expanded", "false");
+// Relógio de Rondonópolis-MT (America/Cuiaba)
+const horaEl = document.getElementById("hora");
+function atualizarHora() {
+  horaEl.textContent = new Date().toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "America/Cuiaba",
   });
-});
+}
+atualizarHora();
+setInterval(atualizarHora, 20000);
 
-// Navbar com fundo mais sólido ao rolar
-const navbar = document.getElementById("navbar");
-window.addEventListener("scroll", () => {
-  navbar.style.boxShadow = window.scrollY > 10
-    ? "0 6px 24px -12px rgba(0,0,0,0.5)"
-    : "none";
-});
+// Efeito de digitação alternando o cargo no hero
+const typedRole = document.getElementById("typedRole");
+const PAPEIS = [
+  "Estudante de Sistemas da Informação",
+  "Agente de Registro ICP-Brasil",
+  "Entusiasta de análise de dados",
+];
 
-// Animações de entrada (fade/slide) via IntersectionObserver
-const revealEls = document.querySelectorAll("[data-reveal]");
-const barFills = document.querySelectorAll(".bar-fill");
+if (prefersReducedMotion) {
+  typedRole.textContent = PAPEIS[0];
+} else {
+  let papelIndex = 0;
+  let charIndex = 0;
+  let fase = "digita";
+  let esperaTicks = 0;
 
-const revealObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("in-view");
-        revealObserver.unobserve(entry.target);
+  function tickPapel() {
+    const alvo = PAPEIS[papelIndex];
+    if (fase === "digita") {
+      if (charIndex < alvo.length) {
+        charIndex += 1;
+        typedRole.textContent = alvo.slice(0, charIndex);
+      } else {
+        fase = "espera";
+        esperaTicks = 0;
       }
-    });
-  },
-  { threshold: 0.15 }
-);
-
-revealEls.forEach((el) => revealObserver.observe(el));
-
-const barObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add("in-view");
-        barObserver.unobserve(entry.target);
+    } else if (fase === "espera") {
+      esperaTicks += 1;
+      if (esperaTicks > 28) fase = "apaga";
+    } else {
+      if (charIndex > 0) {
+        charIndex -= 1;
+        typedRole.textContent = alvo.slice(0, charIndex);
+      } else {
+        papelIndex = (papelIndex + 1) % PAPEIS.length;
+        fase = "digita";
       }
-    });
-  },
-  { threshold: 0.4 }
-);
-
-barFills.forEach((el) => barObserver.observe(el));
-
-// Toast de "conquista desbloqueada" ao ver a seção de Experiência pela 1ª vez
-const toast = document.getElementById("toast");
-const experienceSection = document.getElementById("experiencia");
-
-function showToast(message) {
-  toast.textContent = message;
-  toast.classList.add("is-visible");
-  setTimeout(() => toast.classList.remove("is-visible"), 3200);
+    }
+    setTimeout(tickPapel, 62);
+  }
+  tickPapel();
 }
 
-if (experienceSection) {
-  const achievementObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          showToast("🏆 Conquista desbloqueada: Experiência Profissional");
-          achievementObserver.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.3 }
-  );
-  achievementObserver.observe(experienceSection);
+// Copiar e-mail
+const copyEmailBtn = document.getElementById("copyEmailBtn");
+const EMAIL = "jbrocua@gmail.com";
+copyEmailBtn.addEventListener("click", () => {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(EMAIL).catch(() => {});
+  }
+  copyEmailBtn.textContent = "E-mail copiado ✓";
+  setTimeout(() => {
+    copyEmailBtn.textContent = "Copiar e-mail";
+  }, 2200);
+});
+
+// Abas de experiência
+const VAGAS = [
+  {
+    cargo: "Agente de Registro",
+    periodo: "2023 — Atual",
+    empresa: "Facilita Certificadora Digital · Rondonópolis, MT",
+    atividades: [
+      "Emissão e validação de certificados digitais (SOLUTI), garantindo conformidade e agilidade no processo.",
+      "Atendimento presencial a clientes, esclarecendo dúvidas sobre certificação digital e documentação necessária.",
+      "Conferência e organização de documentos, assegurando precisão antes da emissão dos certificados.",
+    ],
+  },
+  {
+    cargo: "Assistente Administrativo",
+    periodo: "2022 — 2023",
+    empresa: "Escritório Carvalho Contabilidade · Rondonópolis, MT",
+    atividades: [
+      "Suporte às rotinas administrativas, contribuindo para a organização do fluxo de trabalho.",
+      "Digitalização e organização de documentos, otimizando o processo de arquivamento.",
+      "Atendimento a clientes, auxiliando em demandas administrativas do dia a dia.",
+    ],
+  },
+];
+
+const tabAgente = document.getElementById("tabAgente");
+const tabAssistente = document.getElementById("tabAssistente");
+const jobContent = document.getElementById("jobContent");
+const jobPeriodo = document.getElementById("jobPeriodo");
+const jobCargo = document.getElementById("jobCargo");
+const jobEmpresa = document.getElementById("jobEmpresa");
+const jobAtividades = document.getElementById("jobAtividades");
+
+let vagaAtual = 0;
+
+function preencherVaga(index) {
+  const vaga = VAGAS[index];
+  jobPeriodo.textContent = vaga.periodo;
+  jobCargo.textContent = vaga.cargo;
+  jobEmpresa.textContent = vaga.empresa;
+  jobAtividades.innerHTML = "";
+  vaga.atividades.forEach((item) => {
+    const li = document.createElement("li");
+    li.innerHTML = `<span class="job-panel__marker">▚</span>${item}`;
+    jobAtividades.appendChild(li);
+  });
+
+  [tabAgente, tabAssistente].forEach((tab, i) => {
+    const ativo = i === index;
+    tab.classList.toggle("is-active", ativo);
+    tab.setAttribute("aria-selected", String(ativo));
+  });
 }
+
+function mostrarVaga(index) {
+  if (index === vagaAtual) return;
+  vagaAtual = index;
+
+  if (prefersReducedMotion) {
+    preencherVaga(index);
+    return;
+  }
+
+  jobContent.classList.add("is-switching");
+  setTimeout(() => {
+    preencherVaga(index);
+    jobContent.classList.remove("is-switching");
+  }, 180);
+}
+
+tabAgente.addEventListener("click", () => mostrarVaga(0));
+tabAssistente.addEventListener("click", () => mostrarVaga(1));
