@@ -469,10 +469,21 @@ h1, h2, h3, h4 {
 .meter__seg.is-on { background: var(--lime); }
 
 /* PROJECTS */
+/* Colunas fixas por largura (e não auto-fit): com 4 cartões normais as linhas
+   fecham sempre por igual — 1 no celular, 2×2 no tablet, 4 lado a lado no desktop.
+   O cartão largo (--wide) continua ocupando a linha inteira. */
 .repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  grid-template-columns: 1fr;
   gap: 16px;
+}
+
+@media (min-width: 720px) {
+  .repo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1240px) {
+  .repo-grid { grid-template-columns: repeat(4, 1fr); }
 }
 
 .repo-card {
